@@ -10,7 +10,7 @@ import (
 
 func InitDBPostgres(cfg *config.Config) *gorm.DB {
 
-	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d TimeZone=Asia/Jakarta",
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=disable TimeZone=Asia/Jakarta",
 		cfg.DBHOST, cfg.DBUSER, cfg.DBPASS, cfg.DBNAME, cfg.DBPORT)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
@@ -18,12 +18,6 @@ func InitDBPostgres(cfg *config.Config) *gorm.DB {
 		panic(err)
 	}
 
-	err = db.Exec("SELECT 1").Error
-	if err != nil {
-		panic(err)
-	}
-
-	AutoMigrate(db)
 	return db
 }
 

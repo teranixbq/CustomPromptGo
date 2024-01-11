@@ -1,7 +1,10 @@
 package config
 
 import (
+	//"log"
+
 	"log"
+
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -32,10 +35,14 @@ func loadConfig() *Config {
 	var res = new(Config)
 
 	config := viper.New()
+
 	config.SetConfigFile(".env")
+	if err := config.ReadInConfig(); err != nil {
+		log.Fatal("Config: Unable to read configuration file")
+	}
 
 	if val := config.GetInt("SERVERPORT"); val != 0 {
-		res.SERVERPORT = int(val)
+		res.SERVERPORT = val
 	} else {
 		logrus.Error("Config: invalid server port value")
 		return nil

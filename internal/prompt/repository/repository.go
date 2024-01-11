@@ -13,15 +13,15 @@ type promptRepository struct {
 	db *gorm.DB
 }
 
-type RepositoryPrompt interface {
+type RepositoryInterface interface {
 	Insert(data request.RequestPrompt) error
-	SelectAll() ([]response.ResponsePrompt, error)
+	SelectAll(question string) ([]response.ResponsePrompt, error)
 	SelectByID(id string) (response.ResponsePrompt, error)
-	Update(id, instructions, category string) error
+	Update(id string, data request.RequestPrompt) error
 	Delete(id string) error
 }
 
-func NewPromptRepository(db *gorm.DB) RepositoryPrompt {
+func NewPromptRepository(db *gorm.DB) RepositoryInterface {
 	return &promptRepository{
 		db: db,
 	}
@@ -38,16 +38,24 @@ func (prompt *promptRepository) Insert(data request.RequestPrompt) error {
 	return nil
 }
 
-func (prompt *promptRepository) SelectAll() ([]response.ResponsePrompt, error) {
+func (prompt *promptRepository) SelectAll(question string) ([]response.ResponsePrompt, error) {
 	dataPrompt := []model.Prompt{}
 
-	tx := prompt.db.Find(&dataPrompt)
-	if tx.Error != nil {
-		return nil, tx.Error
-	}
+	if question != "" {
+		tx := prompt.db.Where("instructions LIKE ?", "%"+question+"%").Find(&dataPrompt)
+		if tx.Error != nil {
+			return nil, tx.Error
+		}
 
-	if tx.RowsAffected == 0 {
-		return nil, errors.New("data not found")
+		if tx.RowsAffected == 0 {
+			return nil, errors.New("data not found")
+		}
+
+	} else {
+		tx := prompt.db.Find(&dataPrompt)
+		if tx.Error != nil {
+			return nil, tx.Error
+		}
 	}
 
 	response := response.ListModelToResponsePrompt(dataPrompt)
@@ -70,11 +78,24 @@ func (prompt *promptRepository) SelectByID(id string) (response.ResponsePrompt, 
 	return response, nil
 }
 
-func (prompt *promptRepository) Update(id string, instructions string, category string) error {
-	panic("unimplemented")
+func (prompt *promptRepository) Update(id string, data request.RequestPrompt) error {
+	input := request.RequestPromptToModel(data)
+
+	tx := prompt.db.Where("id = ?", id).Updates(&input)
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	return nil
 }
 
-func (*promptRepository) Delete(id string) error {
-	panic("unimplemented")
-}
+func (prompt *promptRepository) Delete(id string) error {
+	dataPrompt := model.Prompt{}
 
+	tx := prompt.db.Where("id = ?", id).Delete(&dataPrompt)
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	return nil
+}
