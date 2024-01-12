@@ -15,7 +15,7 @@ type Config struct {
 	DBUSER     string
 	DBPASS     string
 	DBNAME     string
-	SERVERPORT int
+	SERVERPORT string
 	OPENAIKEY  string
 }
 
@@ -41,7 +41,7 @@ func loadConfig() *Config {
 		log.Fatal("Config: Unable to read configuration file")
 	}
 
-	if val := config.GetInt("SERVERPORT"); val != 0 {
+	if val := config.GetString("SERVERPORT"); val != "" {
 		res.SERVERPORT = val
 	} else {
 		logrus.Error("Config: invalid server port value")

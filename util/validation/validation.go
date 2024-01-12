@@ -44,3 +44,10 @@ func MaxLength(data string, maxLength int) error {
 	}
 	return nil
 }
+
+func CleanSpace(data string) string {
+	words := strings.Fields(data)
+
+	cleaned := strings.Join(words, " ")
+	return cleaned
+}

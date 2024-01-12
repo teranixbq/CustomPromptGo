@@ -5,20 +5,20 @@ import (
 	"promptgo/app/config"
 	"promptgo/app/database"
 	"promptgo/app/route"
-	"strconv"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	g := gin.Default()
+
 	cfg := config.InitConfig()
 	db := database.InitDBPostgres(cfg)
 	database.AutoMigrate(db)
 
-	// g.SetTrustedProxies([]string{})
+	g.Use(cors.Default())
 	route.Run(g, db)
 
-	port := strconv.Itoa(cfg.SERVERPORT)
-	g.Run(fmt.Sprintf(":%s", port))
+	g.Run(fmt.Sprintf(":%s", cfg.SERVERPORT))
 }

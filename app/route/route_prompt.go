@@ -17,5 +17,9 @@ func RoutePrompt(c *gin.RouterGroup, db *gorm.DB) {
 	prompt := c.Group("prompt")
 	{
 		prompt.POST("", promptDelivery.PostInstruction)
+		prompt.GET("",promptDelivery.GetAllInstructions)
+		prompt.GET("/:id",promptDelivery.GetInstructionById)
+		prompt.PUT("/:id",promptDelivery.UpdatePrompt)
+		prompt.DELETE("/:id",promptDelivery.DeletePrompt)
 	}
 }

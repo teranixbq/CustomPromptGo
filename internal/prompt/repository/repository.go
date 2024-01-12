@@ -5,6 +5,7 @@ import (
 	"promptgo/internal/prompt/dto/request"
 	"promptgo/internal/prompt/dto/response"
 	"promptgo/internal/prompt/model"
+	"promptgo/util/constanta"
 
 	"gorm.io/gorm"
 )
@@ -15,7 +16,7 @@ type promptRepository struct {
 
 type RepositoryInterface interface {
 	Insert(data request.RequestPrompt) error
-	SelectAll(question string) ([]response.ResponsePrompt, error)
+	SelectAll() ([]response.ResponsePrompt, error)
 	SelectByID(id string) (response.ResponsePrompt, error)
 	Update(id string, data request.RequestPrompt) error
 	Delete(id string) error
@@ -30,6 +31,11 @@ func NewPromptRepository(db *gorm.DB) RepositoryInterface {
 func (prompt *promptRepository) Insert(data request.RequestPrompt) error {
 	input := request.RequestPromptToModel(data)
 
+	err := prompt.FindInstructions(data.Instructions)
+	if err != nil {
+		return err
+	}
+
 	tx := prompt.db.Create(&input)
 	if tx.Error != nil {
 		return tx.Error
@@ -38,24 +44,12 @@ func (prompt *promptRepository) Insert(data request.RequestPrompt) error {
 	return nil
 }
 
-func (prompt *promptRepository) SelectAll(question string) ([]response.ResponsePrompt, error) {
+func (prompt *promptRepository) SelectAll() ([]response.ResponsePrompt, error) {
 	dataPrompt := []model.Prompt{}
 
-	if question != "" {
-		tx := prompt.db.Where("instructions LIKE ?", "%"+question+"%").Find(&dataPrompt)
-		if tx.Error != nil {
-			return nil, tx.Error
-		}
-
-		if tx.RowsAffected == 0 {
-			return nil, errors.New("data not found")
-		}
-
-	} else {
-		tx := prompt.db.Find(&dataPrompt)
-		if tx.Error != nil {
-			return nil, tx.Error
-		}
+	tx := prompt.db.Find(&dataPrompt).Order("created_at DESC")
+	if tx.Error != nil {
+		return nil, tx.Error
 	}
 
 	response := response.ListModelToResponsePrompt(dataPrompt)
@@ -81,9 +75,18 @@ func (prompt *promptRepository) SelectByID(id string) (response.ResponsePrompt, 
 func (prompt *promptRepository) Update(id string, data request.RequestPrompt) error {
 	input := request.RequestPromptToModel(data)
 
+	err := prompt.FindInstructions(data.Instructions)
+	if err != nil {
+		return err
+	}
+
 	tx := prompt.db.Where("id = ?", id).Updates(&input)
 	if tx.Error != nil {
 		return tx.Error
+	}
+
+	if tx.RowsAffected == 0 {
+		return errors.New(constanta.ERROR_NOT_FOUND)
 	}
 
 	return nil
@@ -95,6 +98,25 @@ func (prompt *promptRepository) Delete(id string) error {
 	tx := prompt.db.Where("id = ?", id).Delete(&dataPrompt)
 	if tx.Error != nil {
 		return tx.Error
+	}
+
+	if tx.RowsAffected == 0 {
+		return errors.New(constanta.ERROR_NOT_FOUND)
+	}
+
+	return nil
+}
+
+func (prompt *promptRepository) FindInstructions(instructions string) error {
+	dataPrompt := model.Prompt{}
+
+	err := prompt.db.Where("instructions = ? ", instructions).Find(&dataPrompt)
+	if err.Error != nil {
+		return err.Error
+	}
+
+	if err.RowsAffected != 0 {
+		return errors.New(constanta.ERROR_DATA_EXIST)
 	}
 
 	return nil

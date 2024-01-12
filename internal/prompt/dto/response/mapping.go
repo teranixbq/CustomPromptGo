@@ -4,13 +4,14 @@ import "promptgo/internal/prompt/model"
 
 func ModelToResponsePrompt(data model.Prompt) ResponsePrompt {
 	return ResponsePrompt{
-		Instructions: data.Instructions,
+		ID:           data.ID,
 		Category:     data.Category,
-		CreatedAt:   data.CreatedAt,
+		Instructions: data.Instructions,
+		CreatedAt:    data.CreatedAt,
 	}
 }
 
-func ListModelToResponsePrompt(data []model.Prompt) []ResponsePrompt{
+func ListModelToResponsePrompt(data []model.Prompt) []ResponsePrompt {
 	list := []ResponsePrompt{}
 	for _, v := range data {
 		result := ModelToResponsePrompt(v)
