@@ -10,4 +10,5 @@ func Run(c *gin.Engine,db *gorm.DB) {
 	base := c.Group("/")
 	
 	RoutePrompt(base,db)
+	RouteChat(base,db)
 }

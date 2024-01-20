@@ -20,8 +20,19 @@ func ListModelToResponsePrompt(data []model.Prompt) []ResponsePrompt {
 	return list
 }
 
-// func RequestRecybotToCoreRecybot(data RecybotRequest) entity.RecybotCore {
-// 	return entity.RecybotCore{
-// 		Question: data.Question,
-// 	}
-// }
+
+func ModelToAllPrompt(data model.Prompt) AllPrompt {
+	return AllPrompt{
+		Category:     data.Category,
+		Instructions: data.Instructions,
+	}
+}
+
+func ListModelToAllPrompt(data []model.Prompt) []AllPrompt {
+	list := []AllPrompt{}
+	for _, v := range data {
+		result := ModelToAllPrompt(v)
+		list = append(list, result)
+	}
+	return list
+}
