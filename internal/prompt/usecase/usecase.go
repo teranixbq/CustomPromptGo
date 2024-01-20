@@ -57,7 +57,8 @@ func (prompt *promptUsecase) SelectAll() ([]response.ResponsePrompt, error) {
 		return nil, err
 	}
 
-	return dataPrompt, nil
+	result := response.ListModelToResponsePrompt(dataPrompt)
+	return result, nil
 }
 
 func (prompt *promptUsecase) SelectByID(id string) (response.ResponsePrompt, error) {
@@ -103,3 +104,6 @@ func (prompt *promptUsecase) Delete(id string) error {
 
 	return nil
 }
+
+
+// For Chat

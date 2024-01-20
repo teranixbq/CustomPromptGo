@@ -16,7 +16,7 @@ type promptRepository struct {
 
 type RepositoryInterface interface {
 	Insert(data request.RequestPrompt) error
-	SelectAll() ([]response.ResponsePrompt, error)
+	SelectAll() ([]model.Prompt, error)
 	SelectByID(id string) (response.ResponsePrompt, error)
 	Update(id string, data request.RequestPrompt) error
 	Delete(id string) error
@@ -44,7 +44,7 @@ func (prompt *promptRepository) Insert(data request.RequestPrompt) error {
 	return nil
 }
 
-func (prompt *promptRepository) SelectAll() ([]response.ResponsePrompt, error) {
+func (prompt *promptRepository) SelectAll() ([]model.Prompt, error) {
 	dataPrompt := []model.Prompt{}
 
 	tx := prompt.db.Find(&dataPrompt).Order("created_at DESC")
@@ -52,8 +52,8 @@ func (prompt *promptRepository) SelectAll() ([]response.ResponsePrompt, error) {
 		return nil, tx.Error
 	}
 
-	response := response.ListModelToResponsePrompt(dataPrompt)
-	return response, nil
+
+	return dataPrompt, nil
 }
 
 func (prompt *promptRepository) SelectByID(id string) (response.ResponsePrompt, error) {
@@ -120,4 +120,18 @@ func (prompt *promptRepository) FindInstructions(instructions string) error {
 	}
 
 	return nil
+}
+
+// for chat
+
+func (prompt *promptRepository) SelectAllPrompt() ([]response.AllPrompt, error) {
+	dataPrompt := []model.Prompt{}
+
+	tx := prompt.db.Find(&dataPrompt)
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	response := response.ListModelToAllPrompt(dataPrompt)
+	return response, nil
 }
